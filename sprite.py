@@ -3,11 +3,12 @@ Filename : sprite.py
 Description : Sprite demonstration and pygame basics.
 Reference : Clear Code Channel
 Language : Python 3.11
-Version : 1.2
+Version : 1.3
 Revisions :
-v1.0 - Added basic setup and game loop logic
-v1.1 - Added Crosshair class
+v1.0 - Added basic setup and game loop logic.
+v1.1 - Added Crosshair class.
 v1.2 - Added Crosshair and background.
+v1.3 - Added Targets and basic collision handling.
 
 """
 
@@ -33,6 +34,7 @@ class Crosshair(pygame.sprite.Sprite):
     # Simulate shooting
     def shoot(self):
         self.gunshot.play()
+        pygame.sprite.spritecollide(crosshair, target_group, True)
 
 
 class Target(pygame.sprite.Sprite):
@@ -43,53 +45,60 @@ class Target(pygame.sprite.Sprite):
         # Place targets at position (x,y)
         self.rect.center = [pos_x, pos_y]
 
-def main():
-    # General setup
-    pygame.init()
-    clock = pygame.time.Clock()
+# General setup
+pygame.init()
+clock = pygame.time.Clock()
 
-    # Game Screen
-    screen_width = 1280
-    screen_height = 768
-    screen = pygame.display.set_mode((screen_width, screen_height))
-    background = pygame.image.load(
-        "shooting-gallery-pack/PNG/Stall/background.png")
-    # Scale to fill screen
-    background = pygame.transform.scale(background,
-                                        (screen_width, screen_height))
-    pygame.mouse.set_visible(False)
+# Game Screen
+screen_width = 1920
+screen_height = 1080
+screen = pygame.display.set_mode((screen_width, screen_height))
+background = pygame.image.load(
+    "shooting-gallery-pack/PNG/Stall/background.png")
+# Scale to fill screen
+background = pygame.transform.scale(background,
+                                    (screen_width, screen_height))
+pygame.mouse.set_visible(False)
 
-    # Crosshair
-    crosshair = Crosshair(
-        "shooting-gallery-pack/PNG/HUD/crosshair.png")
-    # Create group for sprite so group can draw each sprite
-    crosshair_group = pygame.sprite.Group()
-    crosshair_group.add(crosshair)
+# Crosshair
+crosshair = Crosshair(
+    "shooting-gallery-pack/PNG/HUD/crosshair.png")
+# Create group for sprite so group can draw each sprite
+crosshair_group = pygame.sprite.Group()
+crosshair_group.add(crosshair)
 
-    # Target
-    target_group = pygame.sprite.Group()
-    for target in range(20):
-        target = Target("shooting-gallery-pack/PNG/Objects/target.png", random.randrange(0, screen_width), random.randrange(0,screen_height))
-        target_group.add(target)
+# Target
+target_group = pygame.sprite.Group()
+for target in range(20):
+    target = Target("shooting-gallery-pack/PNG/Objects/target.png",
+                    random.randrange(0, screen_width),
+                    random.randrange(0, screen_height))
+    target_group.add(target)
 
-    # Game Loop
-    while True:
-        for event in pygame.event.get():
-            # Quit on ESC
-            if event.type == pygame.QUIT:
+# Game Loop
+while True:
+    for event in pygame.event.get():
+        # Quit
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        # Play gunshot sound when button is pressed
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            crosshair.shoot()
+        # Quit on hitting ESC key
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
-            # Play gunshot sound when button is pressed
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                crosshair.shoot()
 
-        pygame.display.flip()
-        # Draw background, sprites
-        screen.blit(background, (0, 0))
-        crosshair_group.draw(screen)
-        crosshair_group.update()
-        clock.tick(60)
+    pygame.display.flip()
+    # Draw background, sprites
+    screen.blit(background, (0, 0))
 
+    target_group.draw(screen)
 
-if __name__ == "__main__":
-    main()
+    crosshair_group.draw(screen)
+    crosshair_group.update()
+
+    clock.tick(60)
+
